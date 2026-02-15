@@ -18,7 +18,8 @@ COPY app ./app
 COPY datasets ./datasets
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
-RUN chmod +x /app/docker-entrypoint.sh \
+RUN sed -i 's/\r$//' /app/docker-entrypoint.sh \
+  && chmod +x /app/docker-entrypoint.sh \
   && useradd --create-home --uid 10001 appuser \
   && chown -R appuser:appuser /app
 

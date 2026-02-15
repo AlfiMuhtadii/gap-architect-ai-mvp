@@ -1,0 +1,125 @@
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:16}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gap_architect}
+      POSTGRES_USER: ${POSTGRES_USER:-gap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gap}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gap} -d ${POSTGRES_DB:-gap_architect}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "${POSTGRES_EXPOSE_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7-alpine}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "${REDIS_EXPOSE_PORT:-6379}:6379"
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      APP_NAME: ${APP_NAME:-gap-architect}
+      API_V1_STR: ${API_V1_STR:-/api/v1}
+      DEBUG: ${DEBUG:-true}
+      POSTGRES_DB: ${POSTGRES_DB:-gap_architect}
+      POSTGRES_USER: ${POSTGRES_USER:-gap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gap}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://gap:gap@postgres:5432/gap_architect}
+      ASYNC_DATABASE_URL: ${ASYNC_DATABASE_URL:-postgresql+asyncpg://gap:gap@postgres:5432/gap_architect}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/1}
+      LLM_PROVIDER: ${LLM_PROVIDER:-compatible}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://router.huggingface.co}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-meta-llama/Meta-Llama-3-8B-Instruct}
+      LOCAL_LLM_BASE_URL: ${LOCAL_LLM_BASE_URL:-http://ollama:11434}
+      LOCAL_LLM_MODEL: ${LOCAL_LLM_MODEL:-llama3.1}
+      MAX_CONCURRENT_GAP_JOBS: ${MAX_CONCURRENT_GAP_JOBS:-4}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "${BACKEND_EXPOSE_PORT:-8000}:8000"
+    volumes:
+      - ./backend/datasets:/app/datasets:ro
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "${FRONTEND_EXPOSE_PORT:-3000}:3000"
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "${OLLAMA_EXPOSE_PORT:-11434}:11434"
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=${OLLAMA_HOST:-0.0.0.0}
+    profiles: ["local-llm"]
+    networks:
+      - app_net
+
+  ollama-init:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
+    depends_on:
+      - ollama
+    environment:
+      - LOCAL_LLM_MODEL=${LOCAL_LLM_MODEL:-llama3.1}
+    entrypoint: ["sh", "-lc", "ollama pull ${LOCAL_LLM_MODEL}"]
+    restart: "no"
+    profiles: ["local-llm"]
+    networks:
+      - app_net
+
+volumes:
+  pgdata:
+  ollama:
+
+networks:
+  app_net:
+    driver: bridge

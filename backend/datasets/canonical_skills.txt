@@ -1,0 +1,80 @@
+# Canonical skills
+python
+golang
+go
+java
+javascript
+typescript
+nodejs
+ruby
+ruby on rails
+rails
+php
+laravel
+dotnet
+c#
+c++
+rust
+sql
+postgresql
+mysql
+sqlite
+mongodb
+redis
+elasticsearch
+opensearch
+kafka
+rabbitmq
+grpc
+rest
+graphql
+oauth2
+openid connect
+jwt
+rbac
+abac
+rate limiting
+caching
+async jobs
+background jobs
+microservices
+event-driven architecture
+domain-driven design
+distributed systems
+multi-tenant saas
+saga pattern
+circuit breaker
+api gateway
+service mesh
+docker
+kubernetes
+helm
+terraform
+ansible
+github actions
+gitlab ci
+ci/cd
+aws
+gcp
+azure
+s3
+object storage
+prometheus
+grafana
+opentelemetry
+elk
+logstash
+kibana
+owasp
+encryption
+secrets management
+monitoring
+observability
+logging
+tracing
+data pipelines
+vector databases
+rag
+llm integration
+embedding pipelines
+workflow orchestration

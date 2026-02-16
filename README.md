@@ -1,6 +1,13 @@
 # Gap Architect (Option B)
 Full-stack MVP for resume vs JD gap analysis using Next.js + FastAPI + PostgreSQL.
 
+## Tech Stack
+- Frontend: Next.js 14 (React, TypeScript)
+- Backend: FastAPI (Python 3.11, async SQLAlchemy)
+- Database: PostgreSQL
+- AI: HuggingFace router (default), optional local LLM fallback, heuristic fallback
+- Infra: Docker Compose (dev/prod), optional Redis/Ollama profiles
+
 ## TL;DR Architecture
 This MVP uses AI-assisted extraction with deterministic verification, async non-blocking processing, and fingerprint-based idempotent caching.
 

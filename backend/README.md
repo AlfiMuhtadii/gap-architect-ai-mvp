@@ -14,7 +14,6 @@
   - `POSTGRES_USER`
   - `POSTGRES_PASSWORD`
   - or set `DATABASE_URL` and `ASYNC_DATABASE_URL` directly
-- Optional LLM:
   - `LLM_PROVIDER=compatible`
   - `LLM_BASE_URL=https://router.huggingface.co`
   - `LLM_API_KEY=...`

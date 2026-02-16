@@ -176,6 +176,13 @@ Endpoints:
 - Backend: `http://localhost:8000`
 - Health: `http://localhost:8000/health`
 
+### LLM Provider Setup
+Configure your LLM provider in .env (HuggingFace is the default).
+
+Optional runtime paths:
+- Local LLM fallback (LOCAL_LLM_*) for offline/local reliability.
+- Heuristic fallback when external provider credentials are missing or invalid.
+
 ## Production Compose
 1. `cp .env.prod.example .env.production`
 2. `docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build`
